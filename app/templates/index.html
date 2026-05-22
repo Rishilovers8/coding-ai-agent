@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramify RR — Video Language Translator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Ramify RR</h1>
+            <p class="tagline">Translate videos across languages — with voice cloning</p>
+            <span class="badge">AI-Powered</span>
+        </header>
+
+        <!-- Upload Card -->
+        <div class="card">
+            <h2><span class="icon">🎬</span> Upload Your Video</h2>
+            <form id="translateForm" enctype="multipart/form-data">
+                <div class="drop-zone" id="dropZone">
+                    <div class="upload-icon">📁</div>
+                    <p>Drag & drop your video here or click to browse</p>
+                    <span class="formats">Supports MP4, AVI, MOV, MKV, WebM, FLV, WMV (max 500MB)</span>
+                    <input type="file" name="video" id="videoInput" accept="video/*">
+                </div>
+
+                <div class="file-info" id="fileInfo">
+                    <span class="file-icon">🎥</span>
+                    <span class="file-name" id="fileName"></span>
+                    <span class="file-size" id="fileSize"></span>
+                    <button type="button" class="remove-btn" id="removeFile">&times;</button>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px;">
+                    <label for="targetLang">Target Language</label>
+                    <select name="target_lang" id="targetLang">
+                        {% for code, name in languages.items() %}
+                        <option value="{{ code }}" {% if code == 'en' %}selected{% endif %}>
+                            {{ name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="useElevenlabs" name="use_elevenlabs"
+                               {% if not elevenlabs_configured %}disabled{% endif %}>
+                        <div class="label-text">
+                            <strong>Use ElevenLabs Voice Cloning</strong>
+                            <span>
+                                {% if elevenlabs_configured %}
+                                    Preserve the original speaker's voice in the translation
+                                {% else %}
+                                    API key not configured — set ELEVENLABS_API_KEY in .env
+                                {% endif %}
+                            </span>
+                        </div>
+                    </label>
+                    <div class="voice-id-group" id="voiceIdGroup">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="voiceId">Voice ID (optional — uses default if empty)</label>
+                            <input type="text" id="voiceId" name="voice_id"
+                                   placeholder="Enter ElevenLabs Voice ID">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                    Translate Video
+                </button>
+            </form>
+        </div>
+
+        <!-- Progress -->
+        <div class="card progress-section" id="progressSection">
+            <h2><span class="icon">⚙️</span> Processing</h2>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <ul class="progress-steps" id="progressSteps">
+                <li data-step="1"><span class="step-icon">○</span> Extracting audio from video</li>
+                <li data-step="2"><span class="step-icon">○</span> Transcribing speech with Whisper AI</li>
+                <li data-step="3"><span class="step-icon">○</span> Translating text</li>
+                <li data-step="4"><span class="step-icon">○</span> Generating translated speech</li>
+                <li data-step="5"><span class="step-icon">○</span> Merging audio with video</li>
+                <li data-step="6"><span class="step-icon">○</span> Complete!</li>
+            </ul>
+        </div>
+
+        <!-- Error -->
+        <div class="error-msg" id="errorMsg"></div>
+
+        <!-- Results -->
+        <div class="card results-section" id="resultsSection">
+            <h2><span class="icon">🎉</span> Translation Complete</h2>
+            <div class="result-row">
+                <div class="result-col">
+                    <div class="result-label">Original (<span id="srcLangName"></span>)</div>
+                    <div class="result-text" id="transcriptionText"></div>
+                </div>
+                <div class="result-col">
+                    <div class="result-label">Translated (<span id="tgtLangName"></span>)</div>
+                    <div class="result-text" id="translationText"></div>
+                </div>
+            </div>
+            <a class="download-btn" id="downloadBtn" href="#">
+                ⬇ Download Translated Video
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            Ramify RR &mdash; Cross-lingual video translation powered by Whisper, Google Translate &amp; ElevenLabs
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
